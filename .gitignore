@@ -1,0 +1,11 @@
+DeepSeek/.gitattributes
+DeepSeek/config.json
+DeepSeek/generation_config.json
+DeepSeek/LICENSE
+DeepSeek/model-00001-of-000002.safetensors
+DeepSeek/model-00002-of-000002.safetensors
+DeepSeek/model.safetensors.index.json
+DeepSeek/README.md
+DeepSeek/tokenizer_config.json
+DeepSeek/tokenizer.json
+DeepSeek/figures/benchmark.jpg
