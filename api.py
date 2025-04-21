@@ -1,7 +1,8 @@
 import torch
 import re
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_restful import Resource, Api,reqparse
+import argparse
 
 from transformers import (
     AutoTokenizer,
@@ -69,8 +70,42 @@ def build_prompt(history):
     prompt += "<|assistant|>"
     return prompt
 
-# --- 4. Interactive loop
-print("Enter your message (type <reset> to clear history, Ctrl‑C to exit):\n")
+
+
+class DeepSeek(Resource):
+    def post():
+        data = request.get_json(force=True)
+        prompt = data.get("msg")
+        
+        #inputs = tokenizer(newPrompt, return_tensors="pt").to(model.device)
+
+
+        None
+
+
+    def get():
+        response =  {"status":"success"}
+        return jsonify(response), 200
+
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p","--port", default=5252, help="port number")
+    args = parser.parse_args()
+    app = Flask(__name__)
+    api = Api(app)
+    api.add_resource(DeepSeek, '/')
+    
+    app.run(host="0.0.0.0",port=args.port)
+
+
+
+
+if __name__ == "__main__":
+    main()
+
+'''
 
 while True:
     user_input = input("You: ").strip()
@@ -124,3 +159,6 @@ while True:
 
     print("Assistant:", reply, "\n")
     history.append(("assistant", reply))
+
+
+'''

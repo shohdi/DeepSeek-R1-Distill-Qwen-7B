@@ -4,6 +4,7 @@ model repo :<br/>
 https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B<br/>
 libraries to install :<br/>
 pytroch with cuda from pytorch web site<br/>
+conda install -c conda-forge flask-restful<br/>
 pip install transformers sentencepiece accelerate<br/>
 pip install bitsandbytes<br/>
 <br/>
