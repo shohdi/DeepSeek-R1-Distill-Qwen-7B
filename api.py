@@ -75,12 +75,75 @@ def build_prompt(history):
 class DeepSeek(Resource):
     def post():
         data = request.get_json(force=True)
-        prompt = data.get("msg")
+        history = data.get("history",None)
+        prompt =  data.get("prompt",None)
+        if(history is None):
+            history = [
+                ("system", "You are a helpful assistant. Answer concisely and do not think out loud.")
+            ]
+        if prompt is None:
+            response = {"history":history,"msg":""}
+            return jsonify(response), 200
+
+        user_input = prompt.strip()
+        if not user_input:
+            response = {"history":history,"msg":""}
+            return jsonify(response), 200
+         
+
+        if user_input.lower() == "<reset>":
+            # keep only the system prompt
+            history = [history[0]]
+            print("[History cleared]\n")
+            response = {"history":history,"msg":""}
+            return jsonify(response), 200
+
+        history.append(("user", user_input))
+
+        # build & tokenize
+        prompt = build_prompt(history)
+        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+        # generate
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=200,
+            pad_token_id=tokenizer.eos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+            stopping_criteria=stoppers,
+            do_sample=True,
+            top_p=0.95,
+            temperature=0.8
+
+        )
+
+        # decode full raw output (with markers)
+        raw = tokenizer.decode(outputs[0], skip_special_tokens=False)
+
+        # --- CLEANUP STEPS ---
+        # 1) Grab only what comes *after* the last <|assistant|>
+        reply_part = raw.split("<|assistant|>")[-1]
+        # 2) Discard anything after the next <|user|>
+        reply_part = reply_part.split("<|user|>")[0]
+        # 3) Remove any <think> tags
+        thinkIndex = reply_part.find('</think>')
+        if thinkIndex >= 0:
+            thinkIndex = thinkIndex + 8
+            reply_part = reply_part[thinkIndex:]
+        #clean = reply_part.substr(reply_part.indexOf("</think>") + 8)
+        clean = re.sub(r"</?think>", "", reply_part)
+        clean = re.sub(r"<｜end▁of▁sentence｜>", "", clean)
+        # 4) Strip whitespace/newlines
+        reply = clean.strip()
+
         
-        #inputs = tokenizer(newPrompt, return_tensors="pt").to(model.device)
+        history.append(("assistant", reply))
+
+        msg = reply
+        response = {"history":history,"msg":msg}
 
 
-        None
+        return jsonify(response), 200
 
 
     def get():
